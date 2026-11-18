@@ -4,16 +4,6 @@ import { Leader } from "@/components/aguia/Leader";
 import { ColportorApp } from "@/components/aguia/Colportor";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Águia — Controle e Acompanhamento da Colportagem" },
-      { name: "description", content: "Painel do líder e lançamento diário do colportor no sistema Águia." },
-      { property: "og:title", content: "Águia — Colportagem" },
-      { property: "og:description", content: "Painel do líder e lançamento diário do colportor." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
   component: Index,
 });
 
