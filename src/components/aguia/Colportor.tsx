@@ -47,7 +47,7 @@ export function ColportorApp() {
           </div>
           <div className="mt-5 flex items-center justify-between">
             <div className="flex items-center">
-              <img src={eagle} alt="" width={96} height={96} className="h-20 w-20 object-contain" />
+              <img src={eagle} alt="" width={128} height={128} className="h-28 w-28 object-contain" />
             </div>
             <Menu className="h-7 w-7" />
           </div>
