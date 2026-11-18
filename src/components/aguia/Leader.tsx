@@ -31,8 +31,7 @@ export function Leader() {
       <div className="flex h-[780px] w-[1180px] overflow-hidden rounded-[2rem] bg-background">
         <aside className="relative flex w-[210px] shrink-0 flex-col bg-navy px-5 pb-6 pt-8 text-primary-foreground">
           <div className="flex flex-col items-center">
-            <img src={eagle} alt="" width={96} height={96} className="-mb-2 h-20 w-20 object-contain" />
-            <div className="text-[34px] font-bold leading-none tracking-tight">ÁGUIA</div>
+            <img src={eagle} alt="" width={160} height={160} className="h-36 w-36 object-contain" />
           </div>
           <nav className="mt-10 space-y-1.5">
             {nav.map((n) => (

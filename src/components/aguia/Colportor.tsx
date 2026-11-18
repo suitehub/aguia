@@ -46,7 +46,9 @@ export function ColportorApp() {
             <span className="flex items-center gap-1"><Signal className="h-4 w-4" /><Wifi className="h-4 w-4" /><BatteryFull className="h-5 w-5" /></span>
           </div>
           <div className="mt-5 flex items-center justify-between">
-            <div className="flex items-center gap-1"><img src={eagle} alt="" width={64} height={64} className="h-14 w-14 object-contain" /><span className="text-[28px] font-bold tracking-tight">ÁGUIA</span></div>
+            <div className="flex items-center">
+              <img src={eagle} alt="" width={96} height={96} className="h-20 w-20 object-contain" />
+            </div>
             <Menu className="h-7 w-7" />
           </div>
           <svg viewBox="0 0 360 40" preserveAspectRatio="none" className="absolute -bottom-px left-0 h-10 w-full"><path d="M0 40 L0 22 Q90 0 200 10 T360 6 L360 40Z" fill="var(--background)" /></svg>
