@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Menu, CalendarDays, BookOpen, ShoppingCart, Minus, Plus, Check, Home, PlusCircle, BarChart3, User, MessageCircle, Clock, Bell, Signal, Wifi, BatteryFull, ChevronDown } from "lucide-react";
-import eagle from "@/assets/eagle.png";
+import eagle from "@/assets/logo.png";
 import { Pray } from "./Leader";
 import { LIVROS, type Seguimento } from "./data";
 

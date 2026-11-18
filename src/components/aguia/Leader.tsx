@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { LayoutGrid, Users, CalendarPlus, BarChart3, Target, Settings, CalendarDays, ChevronDown, Bell, BookOpen, ShoppingCart, ChevronRight, ArrowRight, ArrowLeft, Search, Clock } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Bar, BarChart, Legend } from "recharts";
-import eagle from "@/assets/eagle.png";
+import eagle from "@/assets/logo.png";
 import mountain from "@/assets/mountain.jpg";
 import hero from "@/assets/hero.jpg";
 import { Avatar } from "./Avatar";
