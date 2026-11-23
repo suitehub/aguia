@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Menu, CalendarDays, BookOpen, ShoppingCart, Minus, Plus, Check, Home, PlusCircle, BarChart3, User, MessageCircle, Clock, Bell, Signal, Wifi, BatteryFull, ChevronDown, GraduationCap } from "lucide-react";
+import { Menu, CalendarDays, BookOpen, ShoppingCart, Minus, Plus, Check, Home, PlusCircle, BarChart3, User, MessageCircle, Clock, Bell, Signal, Wifi, BatteryFull, ChevronDown, GraduationCap, Trophy, Crown } from "lucide-react";
 import eagle from "@/assets/logo.png";
 import { Pray } from "./Leader";
-import { LIVROS, getTodaySaoPaulo, loadMeditations, loadTrainingPdfs, loadBookOffers, type Seguimento } from "./data";
+import { LIVROS, getTodaySaoPaulo, loadMeditations, loadTrainingPdfs, loadBookOffers, lancamentos, colportores, getColportor, PERIODOS, type Seguimento } from "./data";
 
 function Stepper({ v, set, step = 1 }: { v: number; set: (n: number) => void; step?: number }) {
   return (
@@ -33,6 +33,8 @@ export function ColportorApp() {
   const [trainingPdfs] = useState(() => loadTrainingPdfs());
   const [bookOffers] = useState(() => loadBookOffers());
   const [openOfferSection, setOpenOfferSection] = useState<"pdfs" | "livros" | "outros">("pdfs");
+  const [rankPeriod, setRankPeriod] = useState<"Semanal"|"Mensal"|"Semestral">("Semanal");
+  const [rankMod, setRankMod] = useState<Seguimento>("Casa em Casa");
   const vendas = Object.values(livros).reduce((a, b) => a + b, 0);
 
   useEffect(() => { const t = setTimeout(() => setNotif(true), 900); return () => clearTimeout(t); }, []);
@@ -48,6 +50,22 @@ export function ColportorApp() {
   const salvar = () => { setSaved(true); setTimeout(() => setSaved(false), 2200); };
 
   const todayMeditation = meditations.find(m => m.date === todaySP) || null;
+  const rankingData = useMemo(() => {
+    const dias = PERIODOS[rankPeriod];
+    const filtered = lancamentos.filter(l => l.dia < dias && l.seguimento === rankMod);
+    const byCol = new Map<string, number>();
+    filtered.forEach(l => byCol.set(l.colportorId, (byCol.get(l.colportorId) || 0) + l.horas));
+    const arr = Array.from(byCol.entries()).map(([id, horas]) => {
+      const c = getColportor(id);
+      return { id, nome: c?.nome || "?", horas, foto: c?.foto };
+    });
+    arr.sort((a,b) => b.horas - a.horas || a.nome.localeCompare(b.nome));
+    return arr;
+  }, [rankPeriod, rankMod]);
+  const myId = "1"; // protótipo: usuário logado
+  const myRankIndex = rankingData.findIndex(r => r.id === myId);
+  const myRank = myRankIndex >= 0 ? myRankIndex + 1 : null;
+  const myHoras = myRankIndex >= 0 ? rankingData[myRankIndex].horas : 0;
 
   return (
     <div className="rounded-[3.2rem] bg-navy-deep p-2.5 shadow-2xl ring-[3px] ring-muted-foreground/40">
@@ -223,15 +241,108 @@ export function ColportorApp() {
             </div>
           )}
 
+          {tab === "ranking" && (
+            <div className="mt-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-navy/60">Desempenho da equipe</p>
+              <div className="mt-1 flex items-center gap-2">
+                <Trophy className="h-6 w-6 text-gold" />
+                <h2 className="text-[24px] font-bold leading-tight text-navy">Ranking</h2>
+              </div>
+              <p className="mt-1 text-[13px] text-navy/70">Acompanhe as horas trabalhadas da equipe.</p>
+
+              {/* Period filter */}
+              <div className="mt-4 flex rounded-xl bg-secondary p-1">
+                {(["Semanal","Mensal","Semestral"] as const).map(p => (
+                  <button key={p} onClick={()=>setRankPeriod(p)} className={`flex-1 rounded-lg py-2 text-[13px] font-medium transition ${rankPeriod===p?"bg-gold text-navy":"text-navy/70"}`}>{p}</button>
+                ))}
+              </div>
+
+              {/* Modality filter */}
+              <div className="mt-3 flex gap-2">
+                {(["Casa em Casa","Indicação"] as const).map(m => (
+                  <button key={m} onClick={()=>setRankMod(m)} className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[13px] font-medium ${rankMod===m?"bg-gold text-navy":"bg-card text-navy ring-1 ring-border"}`}>
+                    {m==="Casa em Casa"?<Home className="h-4 w-4"/>:<User className="h-4 w-4"/>}{m}
+                  </button>
+                ))}
+              </div>
+
+              {/* Podium */}
+              {rankingData.length === 0 ? (
+                <div className="card-soft mt-5 p-6 text-center text-[14px] text-muted-foreground">Sem dados para este período/modalidade.</div>
+              ) : (
+                <>
+                  <div className="mt-6 flex items-end justify-center gap-2">
+                    {/* 2nd */}
+                    {rankingData[1] && (
+                      <div className="flex w-[30%] flex-col items-center rounded-t-xl bg-card pt-3 pb-4 shadow ring-1 ring-border">
+                        <div className="text-[12px] font-semibold text-navy/60">2º</div>
+                        <div className="mt-1 grid h-12 w-12 place-items-center rounded-full bg-sky-soft text-[16px] font-bold text-sky">{rankingData[1].nome.charAt(0)}</div>
+                        <div className="mt-2 text-center text-[12px] font-semibold text-navy leading-tight">{rankingData[1].nome.split(" ")[0]}</div>
+                        <div className="text-[14px] font-bold text-navy">{rankingData[1].horas}h</div>
+                      </div>
+                    )}
+                    {/* 1st */}
+                    {rankingData[0] && (
+                      <div className="flex w-[36%] flex-col items-center rounded-t-xl bg-gold pt-4 pb-5 shadow-lg ring-1 ring-gold/50">
+                        <Crown className="h-5 w-5 text-navy" />
+                        <div className="text-[12px] font-semibold text-navy/80">1º</div>
+                        <div className="mt-1 grid h-14 w-14 place-items-center rounded-full bg-card text-[18px] font-bold text-navy">{rankingData[0].nome.charAt(0)}</div>
+                        <div className="mt-2 text-center text-[13px] font-bold text-navy leading-tight">{rankingData[0].nome.split(" ")[0]}</div>
+                        <div className="text-[16px] font-extrabold text-navy">{rankingData[0].horas}h</div>
+                      </div>
+                    )}
+                    {/* 3rd */}
+                    {rankingData[2] && (
+                      <div className="flex w-[30%] flex-col items-center rounded-t-xl bg-card pt-3 pb-4 shadow ring-1 ring-border">
+                        <div className="text-[12px] font-semibold text-navy/60">3º</div>
+                        <div className="mt-1 grid h-12 w-12 place-items-center rounded-full bg-grape-soft text-[16px] font-bold text-grape">{rankingData[2].nome.charAt(0)}</div>
+                        <div className="mt-2 text-center text-[12px] font-semibold text-navy leading-tight">{rankingData[2].nome.split(" ")[0]}</div>
+                        <div className="text-[14px] font-bold text-navy">{rankingData[2].horas}h</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* List for others (4th+) */}
+                  {rankingData.length > 3 && (
+                    <div className="card-soft mt-4 overflow-hidden">
+                      <ul className="divide-y divide-border">
+                        {rankingData.slice(3).map((r, idx) => (
+                          <li key={r.id} className="flex items-center gap-3 px-4 py-3">
+                            <span className="w-6 text-[13px] font-semibold text-navy/60">{idx+4}º</span>
+                            <div className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-[13px] font-bold text-navy">{r.nome.charAt(0)}</div>
+                            <span className="flex-1 text-[14px] font-medium text-navy">{r.nome}</span>
+                            <span className="text-[14px] font-bold text-navy">{r.horas}h</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Sua posição */}
+              <div className="mt-4 flex items-center gap-3 rounded-xl border-l-4 border-gold bg-gold-soft/60 p-4">
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-gold/30 text-navy"><User className="h-5 w-5" /></div>
+                <div className="flex-1">
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-navy/60">Sua posição</div>
+                  <div className="text-[15px] font-semibold text-navy">{getColportor(myId)?.nome || "Você"}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[13px] font-bold text-navy">{myRank ? `${myRank}º` : "—"}</div>
+                  <div className="text-[13px] text-navy/80">{myHoras}h</div>
+                </div>
+              </div>
+            </div>
+          )}
           {tab === "hist" && <div className="mt-2 text-[14px] text-muted-foreground">Histórico (protótipo): use a visão do Líder para ver lançamentos.</div>}
           {tab === "perfil" && <div className="mt-2 text-[14px] text-muted-foreground">Perfil (protótipo).</div>}
         </div>
 
-        <nav className="grid grid-cols-6 bg-navy px-1 pb-5 pt-2 text-[9px] text-primary-foreground">
-          {[{ id: "inicio", l: "Início", i: Home }, { id: "lancar", l: "Lançar", i: PlusCircle }, { id: "hist", l: "Histórico", i: BarChart3 }, { id: "meditacao", l: "Meditação", i: BookOpen }, { id: "treinamento", l: "Ofertas", i: GraduationCap }, { id: "perfil", l: "Perfil", i: User }].map((n) => (
-            <button key={n.id} onClick={() => setTab(n.id)} className={`mx-0.5 flex flex-col items-center gap-0.5 rounded-xl py-2 ${tab === n.id ? "btn-gold font-semibold" : ""}`}><n.i className="h-4 w-4" />{n.l}</button>
+        <nav className="grid grid-cols-7 bg-navy px-0.5 pb-5 pt-2 text-[8px] text-primary-foreground">
+          {[{ id: "inicio", l: "Início", i: Home }, { id: "lancar", l: "Lançar", i: PlusCircle }, { id: "hist", l: "Histórico", i: BarChart3 }, { id: "meditacao", l: "Meditação", i: BookOpen }, { id: "treinamento", l: "Ofertas", i: GraduationCap }, { id: "ranking", l: "Ranking", i: Trophy }, { id: "perfil", l: "Perfil", i: User }].map((n) => (
+            <button key={n.id} onClick={() => setTab(n.id)} className={`mx-0 flex flex-col items-center gap-0.5 rounded-xl py-2 ${tab === n.id ? "btn-gold font-semibold" : ""}`}><n.i className="h-4 w-4" />{n.l}</button>
           ))}
-          <span className="col-span-6 mx-auto mt-2 h-1 w-28 rounded-full bg-primary-foreground" />
+          <span className="col-span-7 mx-auto mt-2 h-1 w-24 rounded-full bg-primary-foreground" />
         </nav>
         {saved && <div className="absolute inset-x-6 bottom-28 z-30 flex items-center gap-2 rounded-xl bg-navy px-4 py-3 text-[13px] text-primary-foreground shadow-xl animate-in fade-in"><Check className="h-4 w-4 text-gold" /> Lançamento enviado à liderança.</div>}
         <button onClick={() => setNotif(true)} title="Simular lembrete das 21h" className="absolute right-3 top-[150px] z-10 grid h-8 w-8 place-items-center rounded-full bg-card text-navy shadow ring-1 ring-border"><Bell className="h-4 w-4" /></button>
