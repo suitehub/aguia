@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { LayoutGrid, Users, CalendarPlus, BarChart3, Target, Settings, CalendarDays, ChevronDown, Bell, BookOpen, ShoppingCart, ChevronRight, ArrowRight, ArrowLeft, Search, Clock, BookMarked, GraduationCap } from "lucide-react";
+import { LayoutGrid, Users, CalendarPlus, BarChart3, Target, Settings, CalendarDays, ChevronDown, Bell, BookOpen, ShoppingCart, ChevronRight, ArrowRight, ArrowLeft, Search, Clock, BookMarked, GraduationCap, Trophy, Crown, Home, User } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Bar, BarChart, Legend } from "recharts";
 import eagle from "@/assets/logo.png";
 import mountain from "@/assets/mountain.jpg";
@@ -13,12 +13,13 @@ const Pray = (p: { className?: string }) => (
   </svg>
 );
 
-type Page = "geral" | "colportores" | "lancamentos" | "relatorios" | "metas" | "meditacoes" | "treinamentos";
+type Page = "geral" | "colportores" | "lancamentos" | "relatorios" | "ranking" | "meditacoes" | "treinamentos" | "metas";
 const nav: { id: Page; label: string; icon: typeof Users }[] = [
   { id: "geral", label: "Visão Geral", icon: LayoutGrid },
   { id: "colportores", label: "Colportores", icon: Users },
   { id: "lancamentos", label: "Lançamentos", icon: CalendarPlus },
   { id: "relatorios", label: "Relatórios", icon: BarChart3 },
+  { id: "ranking", label: "Ranking", icon: Trophy },
   { id: "meditacoes", label: "Meditações", icon: BookMarked },
   { id: "treinamentos", label: "Ofertas", icon: GraduationCap },
   { id: "metas", label: "Metas", icon: Target },
@@ -61,6 +62,7 @@ export function Leader() {
           {page === "colportores" && <ColportoresPage sel={sel} setSel={setSel} />}
           {page === "lancamentos" && <LancamentosPage />}
           {page === "relatorios" && <RelatoriosPage />}
+          {page === "ranking" && <RankingPage />}
           {page === "meditacoes" && <MeditacoesPage />}
           {page === "treinamentos" && <TreinamentosPage />}
           {page === "metas" && <MetasPage />}
@@ -304,6 +306,86 @@ function RelatoriosPage() {
         </div>
       </div>
       {modo === "Individual" && <div className="mt-5"><LancTable rows={filtrado.slice(0, 8)} showNome={false} /></div>}
+    </div>
+  );
+}
+
+function RankingPage() {
+  const [rankPeriod, setRankPeriod] = useState<"Semanal"|"Mensal"|"Semestral">("Semanal");
+  const [rankMod, setRankMod] = useState<"Casa em Casa"|"Indicação">("Casa em Casa");
+  const rankingData = useMemo(() => {
+    const dias = PERIODOS[rankPeriod];
+    const filtered = lancamentos.filter(l => l.dia < dias && l.seguimento === rankMod);
+    const byCol = new Map<string, number>();
+    filtered.forEach(l => byCol.set(l.colportorId, (byCol.get(l.colportorId) || 0) + l.horas));
+    const arr = Array.from(byCol.entries()).map(([id, horas]) => {
+      const c = getColportor(id);
+      return { id, nome: c?.nome || "?", horas };
+    });
+    arr.sort((a,b) => b.horas - a.horas || a.nome.localeCompare(b.nome));
+    return arr;
+  }, [rankPeriod, rankMod]);
+  return (
+    <div>
+      <Title t="Ranking" s="Horas trabalhadas por modalidade e período." />
+      <div className="mb-4 flex flex-wrap items-center gap-4">
+        <div className="inline-flex rounded-xl bg-secondary p-1">
+          {(["Semanal","Mensal","Semestral"] as const).map(p => (
+            <button key={p} onClick={()=>setRankPeriod(p)} className={`rounded-lg px-4 py-1.5 text-[14px] font-medium transition ${rankPeriod===p?"btn-gold":"text-navy/70"}`}>{p}</button>
+          ))}
+        </div>
+        <div className="inline-flex rounded-xl bg-secondary p-1">
+          {(["Casa em Casa","Indicação"] as const).map(m => (
+            <button key={m} onClick={()=>setRankMod(m)} className={`rounded-lg px-4 py-1.5 text-[14px] font-medium transition ${rankMod===m?"btn-gold":"text-navy/70"}`}>{m}</button>
+          ))}
+        </div>
+      </div>
+      {rankingData.length === 0 ? <div className="card-soft p-6 text-center text-muted-foreground">Sem dados para este período/modalidade.</div> : (
+        <>
+          <div className="mb-5 flex items-end justify-center gap-3">
+            {rankingData[1] && (
+              <div className="flex w-[180px] flex-col items-center rounded-t-xl bg-card pt-4 pb-5 shadow ring-1 ring-border">
+                <div className="text-[13px] font-semibold text-navy/60">2º lugar</div>
+                <div className="mt-2 grid h-12 w-12 place-items-center rounded-full bg-sky-soft text-lg font-bold text-sky">{rankingData[1].nome.charAt(0)}</div>
+                <div className="mt-2 text-center text-[14px] font-semibold text-navy">{rankingData[1].nome}</div>
+                <div className="text-[15px] font-bold text-navy">{rankingData[1].horas}h</div>
+              </div>
+            )}
+            {rankingData[0] && (
+              <div className="flex w-[200px] flex-col items-center rounded-t-xl bg-gold pt-5 pb-6 shadow-lg ring-1 ring-gold/50">
+                <Crown className="h-6 w-6 text-navy" /><div className="text-[13px] font-semibold text-navy/80">1º lugar</div>
+                <div className="mt-2 grid h-14 w-14 place-items-center rounded-full bg-card text-xl font-bold text-navy">{rankingData[0].nome.charAt(0)}</div>
+                <div className="mt-2 text-center text-[15px] font-bold text-navy">{rankingData[0].nome}</div>
+                <div className="text-[17px] font-extrabold text-navy">{rankingData[0].horas}h</div>
+              </div>
+            )}
+            {rankingData[2] && (
+              <div className="flex w-[180px] flex-col items-center rounded-t-xl bg-card pt-4 pb-5 shadow ring-1 ring-border">
+                <div className="text-[13px] font-semibold text-navy/60">3º lugar</div>
+                <div className="mt-2 grid h-12 w-12 place-items-center rounded-full bg-grape-soft text-lg font-bold text-grape">{rankingData[2].nome.charAt(0)}</div>
+                <div className="mt-2 text-center text-[14px] font-semibold text-navy">{rankingData[2].nome}</div>
+                <div className="text-[15px] font-bold text-navy">{rankingData[2].horas}h</div>
+              </div>
+            )}
+          </div>
+          <div className="card-soft overflow-hidden">
+            <table className="w-full text-[14px]">
+              <thead className="bg-secondary text-left text-navy"><tr>
+                <th className="px-4 py-3 font-semibold">Posição</th><th className="px-4 py-3 font-semibold">Colportor</th><th className="px-4 py-3 font-semibold">Horas</th>
+              </tr></thead>
+              <tbody className="divide-y divide-border">
+                {rankingData.map((r, i) => (
+                  <tr key={r.id} className="text-navy">
+                    <td className="px-4 py-2.5 font-semibold">{i+1}º</td>
+                    <td className="px-4 py-2.5">{r.nome}</td>
+                    <td className="px-4 py-2.5 font-medium">{r.horas}h</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   );
 }
