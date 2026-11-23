@@ -87,6 +87,7 @@ function Overview({ onVerTodos, onOpen }: { onVerTodos: () => void; onOpen: (id:
   const ult = [
     { id: "1", seg: "Casa em Casa", v: 5 }, { id: "2", seg: "Indicação", v: 3 }, { id: "3", seg: "Casa em Casa", v: 4 },
   ];
+  const tSemana = useMemo(() => totais(lancamentos.filter(l => l.dia < 7)), []);
   return (
     <div className="grid grid-cols-[1.2fr_1fr] gap-5">
       <div className="relative h-[220px] overflow-hidden rounded-[1.1rem] shadow-[var(--shadow-card)]">
@@ -104,9 +105,9 @@ function Overview({ onVerTodos, onOpen }: { onVerTodos: () => void; onOpen: (id:
         <div className="mt-3 flex items-center gap-8">
           <Ring pct={72} />
           <ul className="space-y-3 text-[17px] text-navy">
-            <li className="flex items-center gap-3"><BookOpen className="h-6 w-6 text-leaf" /><b className="font-bold">187</b> Ofertas</li>
-            <li className="flex items-center gap-3"><ShoppingCart className="h-6 w-6 text-gold" /><b className="font-bold">38</b> Vendas</li>
-            <li className="flex items-center gap-3"><Pray className="h-6 w-6 text-grape" /><b className="font-bold">54</b> Orações</li>
+            <li className="flex items-center gap-3"><BookOpen className="h-6 w-6 text-leaf" /><b className="font-bold">{tSemana.ofertas}</b> Ofertas</li>
+            <li className="flex items-center gap-3"><ShoppingCart className="h-6 w-6 text-gold" /><b className="font-bold">{tSemana.vendas}</b> Vendas</li>
+            <li className="flex items-center gap-3"><Pray className="h-6 w-6 text-grape" /><b className="font-bold">{tSemana.oracoes}</b> Orações</li>
           </ul>
         </div>
       </div>
@@ -148,19 +149,19 @@ function Overview({ onVerTodos, onOpen }: { onVerTodos: () => void; onOpen: (id:
       </div>
       <div className="col-span-2 grid grid-cols-4 gap-5">
         <Stat icon={<Users className="h-7 w-7" />} tone="bg-sky-soft text-sky" n="12" l="Colportores" />
-        <Stat icon={<BookOpen className="h-7 w-7" />} tone="bg-leaf-soft text-leaf" n="187" l="Ofertas Feitas" />
-        <Stat icon={<ShoppingCart className="h-7 w-7" />} tone="bg-gold-soft text-gold" n="38" l="Vendas" />
-        <Stat icon={<Pray className="h-7 w-7" />} tone="bg-grape-soft text-grape" n="54" l="Orações" />
+        <Stat icon={<BookOpen className="h-7 w-7" />} tone="bg-leaf-soft text-leaf" n={String(tSemana.ofertas)} l="Ofertas Feitas" />
+        <Stat icon={<ShoppingCart className="h-7 w-7" />} tone="bg-gold-soft text-gold" n={String(tSemana.vendas)} l="Vendas" sub={brl(tSemana.valor)} />
+        <Stat icon={<Pray className="h-7 w-7" />} tone="bg-grape-soft text-grape" n={String(tSemana.oracoes)} l="Orações" />
       </div>
     </div>
   );
 }
 
-function Stat({ icon, tone, n, l }: { icon: React.ReactNode; tone: string; n: string; l: string }) {
+function Stat({ icon, tone, n, l, sub }: { icon: React.ReactNode; tone: string; n: string; l: string; sub?: string }) {
   return (
     <div className="card-soft flex items-center gap-4 p-4">
       <div className={`grid h-16 w-16 place-items-center rounded-full ${tone}`}>{icon}</div>
-      <div><div className="text-[30px] font-bold leading-none text-navy">{n}</div><div className="mt-1 whitespace-nowrap text-[16px] text-navy/80">{l}</div></div>
+      <div><div className="text-[30px] font-bold leading-none text-navy">{n}</div><div className="mt-1 whitespace-nowrap text-[16px] text-navy/80">{l}</div>{sub && <div className="mt-0.5 text-[14px] font-medium text-navy">{sub}</div>}</div>
     </div>
   );
 }
