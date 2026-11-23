@@ -32,6 +32,7 @@ export function ColportorApp() {
   const [meditations] = useState(() => loadMeditations());
   const [trainingPdfs] = useState(() => loadTrainingPdfs());
   const [bookOffers] = useState(() => loadBookOffers());
+  const [openOfferSection, setOpenOfferSection] = useState<"pdfs" | "livros" | "outros">("pdfs");
   const vendas = Object.values(livros).reduce((a, b) => a + b, 0);
 
   useEffect(() => { const t = setTimeout(() => setNotif(true), 900); return () => clearTimeout(t); }, []);
@@ -152,52 +153,73 @@ export function ColportorApp() {
           )}
 
           {tab === "treinamento" && (
-            <div className="mt-2 space-y-5">
+            <div className="mt-2 space-y-4">
               <div>
                 <h2 className="text-[22px] font-semibold leading-tight text-navy">Ofertas</h2>
                 <p className="text-[13px] text-navy/80">Materiais e estratégias para fortalecer sua apresentação e suas vendas.</p>
               </div>
-              <section>
-                <h3 className="text-[15px] font-semibold text-navy">Ofertas disponíveis (PDF)</h3>
-                {trainingPdfs.length === 0 ? <p className="mt-2 text-[13px] text-muted-foreground">Nenhuma oferta disponível.</p> : (
-                  <ul className="mt-3 space-y-3">{trainingPdfs.map(p => (
-                    <li key={p.id} className="card-soft p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-sky-soft text-sky"><BookOpen className="h-5 w-5" /></div>
-                        <div className="min-w-0 flex-1">
-                          <div className="font-semibold text-navy">{p.title}</div>
-                          <div className="mt-0.5 text-[11px] text-muted-foreground">{p.category} • {p.date} • PDF</div>
-                          <div className="mt-2 text-[13px] leading-relaxed text-navy/80">{p.description}</div>
-                          {p.url ? <a href={p.url} target="_blank" rel="noreferrer" className="btn-gold mt-3 inline-flex rounded-lg px-3 py-1.5 text-[12px] font-semibold">Abrir material</a> : <span className="mt-3 inline-block text-[12px] text-muted-foreground">Material demonstrativo (sem arquivo anexado).</span>}
-                        </div>
-                      </div>
-                    </li>
-                  ))}</ul>
+              <div className="card-soft overflow-hidden">
+                <button onClick={()=>setOpenOfferSection(openOfferSection==="pdfs"?"":"pdfs")} className="flex w-full items-center justify-between px-4 py-3 text-left">
+                  <span className="font-semibold text-navy">Ofertas em PDF</span>
+                  <span className="text-navy/60">{openOfferSection==="pdfs"?"−":"+"}</span>
+                </button>
+                {openOfferSection==="pdfs" && (
+                  <div className="border-t border-border px-4 pb-4 pt-3">
+                    {trainingPdfs.length === 0 ? <p className="text-[13px] text-muted-foreground">Nenhuma oferta disponível.</p> : (
+                      <ul className="space-y-3">{trainingPdfs.map(p => (
+                        <li key={p.id} className="rounded-xl border border-border p-3">
+                          <div className="flex items-start gap-3">
+                            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-sky-soft text-sky"><BookOpen className="h-5 w-5" /></div>
+                            <div className="min-w-0 flex-1">
+                              <div className="font-semibold text-navy">{p.title}</div>
+                              <div className="mt-0.5 text-[11px] text-muted-foreground">{p.category} • {p.date} • PDF</div>
+                              <div className="mt-2 text-[13px] leading-relaxed text-navy/80">{p.description}</div>
+                              {p.url ? <a href={p.url} target="_blank" rel="noreferrer" className="btn-gold mt-3 inline-flex rounded-lg px-3 py-1.5 text-[12px] font-semibold">Abrir material</a> : <span className="mt-3 inline-block text-[12px] text-muted-foreground">Material demonstrativo (sem arquivo anexado).</span>}
+                            </div>
+                          </div>
+                        </li>
+                      ))}</ul>
+                    )}
+                  </div>
                 )}
-              </section>
-              <section>
-                <h3 className="text-[15px] font-semibold text-navy">Ofertas de livros</h3>
-                {bookOffers.length === 0 ? <p className="mt-2 text-[13px] text-muted-foreground">Nenhum material disponível.</p> : (
-                  <ul className="mt-3 space-y-3">{bookOffers.map(b => (
-                    <li key={b.id} className="card-soft overflow-hidden">
-                      <div className="bg-navy px-4 py-3 text-primary-foreground">
-                        <div className="text-[16px] font-semibold">{b.bookName}</div>
-                        {b.bookName.includes("(exemplo)") && <span className="mt-1 inline-block rounded-full bg-gold px-2 py-0.5 text-[10px] font-medium text-navy">Exemplo</span>}
-                      </div>
-                      <div className="p-4 text-[13px] text-navy/90">
-                        <p className="leading-relaxed">{b.description}</p>
-                        {b.arguments && <div className="mt-3"><div className="text-[11px] font-semibold uppercase tracking-wide text-navy/60">Argumentos</div><p className="mt-1">{b.arguments}</p></div>}
-                        {b.approach && <div className="mt-3"><div className="text-[11px] font-semibold uppercase tracking-wide text-navy/60">Abordagem sugerida</div><p className="mt-1">{b.approach}</p></div>}
-                        {b.offer && <div className="mt-3 rounded-lg bg-gold-soft/50 p-3"><div className="text-[11px] font-semibold uppercase tracking-wide text-navy/70">Oferta</div><p className="mt-1 font-medium text-navy">{b.offer}</p></div>}
-                      </div>
-                    </li>
-                  ))}</ul>
+              </div>
+              <div className="card-soft overflow-hidden">
+                <button onClick={()=>setOpenOfferSection(openOfferSection==="livros"?"":"livros")} className="flex w-full items-center justify-between px-4 py-3 text-left">
+                  <span className="font-semibold text-navy">Ofertas de livros</span>
+                  <span className="text-navy/60">{openOfferSection==="livros"?"−":"+"}</span>
+                </button>
+                {openOfferSection==="livros" && (
+                  <div className="border-t border-border px-4 pb-4 pt-3">
+                    {bookOffers.length === 0 ? <p className="text-[13px] text-muted-foreground">Nenhum material disponível.</p> : (
+                      <ul className="space-y-3">{bookOffers.map(b => (
+                        <li key={b.id} className="overflow-hidden rounded-xl border border-border">
+                          <div className="bg-navy px-4 py-3 text-primary-foreground">
+                            <div className="text-[16px] font-semibold">{b.bookName}</div>
+                            {b.bookName.includes("(exemplo)") && <span className="mt-1 inline-block rounded-full bg-gold px-2 py-0.5 text-[10px] font-medium text-navy">Exemplo</span>}
+                          </div>
+                          <div className="bg-card p-4 text-[13px] text-navy/90">
+                            <p className="leading-relaxed">{b.description}</p>
+                            {b.arguments && <div className="mt-3"><div className="text-[11px] font-semibold uppercase tracking-wide text-navy/60">Argumentos</div><p className="mt-1">{b.arguments}</p></div>}
+                            {b.approach && <div className="mt-3"><div className="text-[11px] font-semibold uppercase tracking-wide text-navy/60">Abordagem sugerida</div><p className="mt-1">{b.approach}</p></div>}
+                            {b.offer && <div className="mt-3 rounded-lg bg-gold-soft/50 p-3"><div className="text-[11px] font-semibold uppercase tracking-wide text-navy/70">Oferta</div><p className="mt-1 font-medium text-navy">{b.offer}</p></div>}
+                          </div>
+                        </li>
+                      ))}</ul>
+                    )}
+                  </div>
                 )}
-              </section>
-              <section className="rounded-xl border border-dashed border-border p-4">
-                <h3 className="text-[14px] font-semibold text-navy">Outros materiais</h3>
-                <p className="mt-1 text-[12px] text-muted-foreground">Espaço reservado para técnicas de abordagem, objeções, fechamento e orientações. A liderança poderá adicionar conteúdos futuramente.</p>
-              </section>
+              </div>
+              <div className="card-soft overflow-hidden">
+                <button onClick={()=>setOpenOfferSection(openOfferSection==="outros"?"":"outros")} className="flex w-full items-center justify-between px-4 py-3 text-left">
+                  <span className="font-semibold text-navy">Outros materiais</span>
+                  <span className="text-navy/60">{openOfferSection==="outros"?"−":"+"}</span>
+                </button>
+                {openOfferSection==="outros" && (
+                  <div className="border-t border-border px-4 pb-4 pt-3">
+                    <p className="text-[12px] text-muted-foreground">Espaço reservado para técnicas de abordagem, objeções, fechamento e orientações. A liderança poderá adicionar conteúdos futuramente.</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

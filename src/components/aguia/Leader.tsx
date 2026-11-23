@@ -31,11 +31,11 @@ export function Leader() {
   return (
     <div className="rounded-[2.6rem] bg-navy-deep p-3 shadow-2xl ring-1 ring-navy-soft">
       <div className="flex h-[780px] w-[1180px] overflow-hidden rounded-[2rem] bg-background">
-        <aside className="relative flex w-[210px] shrink-0 flex-col bg-navy px-5 pb-6 pt-8 text-primary-foreground">
+        <aside className="relative flex w-[210px] shrink-0 flex-col bg-navy px-5 pb-6 pt-4 text-primary-foreground">
           <div className="flex flex-col items-center">
             <img src={eagle} alt="" width={160} height={160} className="h-36 w-36 object-contain" />
           </div>
-          <nav className="mt-10 space-y-1.5">
+          <nav className="mt-6 space-y-1.5">
             {nav.map((n) => (
               <button key={n.id} onClick={() => go(n.id)}
                 className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-[16px] font-medium transition ${page === n.id ? "btn-gold font-semibold" : "text-primary-foreground/90 hover:bg-navy-soft"}`}>
@@ -326,60 +326,110 @@ function MetasPage() {
 
 function MeditacoesPage() {
   const [items, setItems] = useState<Meditation[]>([]);
-  const [date, setDate] = useState("");
+  const [viewMode, setViewMode] = useState<"semana" | "mes" | "ano">("mes");
+  const [cursor, setCursor] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
+  const [selectedDate, setSelectedDate] = useState("");
   const [title, setTitle] = useState("");
   const [verse, setVerse] = useState("");
   const [content, setContent] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   useEffect(() => { setItems(loadMeditations()); }, []);
-  const reset = () => { setDate(""); setTitle(""); setVerse(""); setContent(""); setEditingId(null); };
+  const reset = () => { setTitle(""); setVerse(""); setContent(""); setEditingId(null); };
+  const medByDate = useMemo(() => {
+    const map = new Map<string, Meditation>();
+    items.forEach(m => map.set(m.date, m));
+    return map;
+  }, [items]);
+  const openDay = (dateStr: string) => {
+    setSelectedDate(dateStr);
+    const found = medByDate.get(dateStr);
+    if (found) { setEditingId(found.id); setTitle(found.title); setVerse(found.verse); setContent(found.content); }
+    else { setEditingId(null); setTitle(""); setVerse(""); setContent(""); }
+  };
   const save = () => {
-    if (!date || !title) return alert("Preencha data e título.");
-    const exists = items.find(m => m.date === date && m.id !== editingId);
-    if (exists) return alert("Já existe uma meditação para essa data. Edite ou exclua a existente.");
+    if (!selectedDate || !title) return alert("Selecione um dia e preencha o título.");
+    const exists = items.find(m => m.date === selectedDate && m.id !== editingId);
+    if (exists && !editingId) return alert("Já existe uma meditação para essa data.");
     let next: Meditation[];
     if (editingId) {
-      next = items.map(m => m.id === editingId ? { ...m, date, title, verse, content } : m);
+      next = items.map(m => m.id === editingId ? { ...m, date: selectedDate, title, verse, content } : m);
     } else {
-      next = [...items, { id: String(Date.now()), date, title, verse, content }];
+      next = [...items, { id: String(Date.now()), date: selectedDate, title, verse, content }];
     }
     next.sort((a,b) => a.date.localeCompare(b.date));
-    setItems(next); saveMeditations(next); reset();
+    setItems(next); saveMeditations(next); reset(); setSelectedDate("");
   };
-  const edit = (m: Meditation) => { setEditingId(m.id); setDate(m.date); setTitle(m.title); setVerse(m.verse); setContent(m.content); };
-  const del = (id: string) => { const next = items.filter(m => m.id !== id); setItems(next); saveMeditations(next); if (editingId === id) reset(); };
+  const del = () => {
+    if (!editingId) return;
+    const next = items.filter(m => m.id !== editingId);
+    setItems(next); saveMeditations(next); reset(); setSelectedDate("");
+  };
+  const daysInMonth = new Date(cursor.y, cursor.m + 1, 0).getDate();
+  const firstDow = new Date(cursor.y, cursor.m, 1).getDay(); // 0 Sun
+  const monthLabel = new Date(cursor.y, cursor.m, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const prevMonth = () => setCursor(c => c.m === 0 ? { y: c.y-1, m: 11 } : { y: c.y, m: c.m-1 });
+  const nextMonth = () => setCursor(c => c.m === 11 ? { y: c.y+1, m: 0 } : { y: c.y, m: c.m+1 });
+  const toDateStr = (y:number,m:number,d:number) => `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+
   return (
     <div>
-      <Title t="Meditações Diárias" s="Gerencie as meditações exibidas aos colportores (aparecem no dia programado)." />
-      <div className="card-soft mb-5 p-4">
-        <div className="grid grid-cols-2 gap-3">
-          <label className="text-[13px] text-navy">Data<input type="date" value={date} onChange={e=>setDate(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
-          <label className="text-[13px] text-navy">Título<input value={title} onChange={e=>setTitle(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
-        </div>
-        <label className="mt-3 block text-[13px] text-navy">Versículo bíblico<input value={verse} onChange={e=>setVerse(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
-        <label className="mt-3 block text-[13px] text-navy">Conteúdo<textarea value={content} onChange={e=>setContent(e.target.value)} rows={4} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
-        <div className="mt-3 flex gap-2">
-          <button onClick={save} className="btn-gold rounded-lg px-4 py-2 text-[14px] font-semibold">{editingId ? "Salvar alterações" : "Cadastrar meditação"}</button>
-          {editingId && <button onClick={reset} className="rounded-lg border border-border px-4 py-2 text-[14px] text-navy">Cancelar</button>}
-        </div>
+      <Title t="Meditações Diárias" s="Clique em um dia para adicionar, editar ou excluir a meditação." />
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="text-[13px] text-navy/70">Visualizar:</span>
+        {(["semana","mes","ano"] as const).map(v => (
+          <button key={v} onClick={()=>setViewMode(v)} className={`rounded-lg px-3 py-1.5 text-[13px] font-medium ${viewMode===v?"btn-gold":"bg-secondary text-navy"}`}>{v==="semana"?"Semana":v==="mes"?"Mês":"Ano"}</button>
+        ))}
       </div>
-      <div className="card-soft overflow-hidden">
-        <table className="w-full text-[14px]">
-          <thead className="bg-secondary text-left text-navy"><tr>
-            <th className="px-4 py-3 font-semibold">Data</th><th className="px-4 py-3 font-semibold">Título</th><th className="px-4 py-3 font-semibold">Ações</th>
-          </tr></thead>
-          <tbody className="divide-y divide-border">
-            {items.length === 0 && <tr><td colSpan={3} className="px-4 py-4 text-muted-foreground">Nenhuma meditação cadastrada.</td></tr>}
-            {items.map(m => (
-              <tr key={m.id} className="text-navy">
-                <td className="px-4 py-2.5">{m.date}</td>
-                <td className="px-4 py-2.5">{m.title}</td>
-                <td className="px-4 py-2.5"><button onClick={()=>edit(m)} className="mr-2 text-sky underline">Editar</button><button onClick={()=>del(m.id)} className="text-red-600 underline">Excluir</button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {viewMode === "mes" && (
+        <div className="card-soft p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <button onClick={prevMonth} className="rounded-lg border border-border px-3 py-1 text-navy">‹</button>
+            <div className="font-semibold capitalize text-navy">{monthLabel}</div>
+            <button onClick={nextMonth} className="rounded-lg border border-border px-3 py-1 text-navy">›</button>
+          </div>
+          <div className="grid grid-cols-7 gap-1 text-center text-[12px] text-navy/70">
+            {["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(d=><div key={d} className="py-1">{d}</div>)}
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {Array.from({length: firstDow}).map((_,i)=><div key={"e"+i} />)}
+            {Array.from({length: daysInMonth}).map((_,i)=>{
+              const d = i+1;
+              const ds = toDateStr(cursor.y, cursor.m, d);
+              const has = medByDate.has(ds);
+              return (
+                <button key={ds} onClick={()=>openDay(ds)} className={`min-h-[44px] rounded-lg border p-1 text-left text-[13px] ${selectedDate===ds?"border-gold bg-gold-soft":"border-border hover:bg-secondary"} ${has?"font-semibold":""}`}>
+                  <div className="text-navy">{d}</div>
+                  {has && <div className="mt-0.5 h-1.5 w-1.5 rounded-full bg-leaf" title="Tem meditação" />}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-3 flex items-center gap-4 text-[12px] text-navy/70"><span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-leaf" /> Com meditação</span><span>Sem marcação = sem meditação</span></div>
+        </div>
+      )}
+      {viewMode === "semana" && (
+        <div className="card-soft p-4 text-[13px] text-navy">
+          <p className="text-muted-foreground">Visualização semanal simplificada: use o modo <b>Mês</b> para clicar nos dias e gerenciar meditações. (Protótipo)</p>
+        </div>
+      )}
+      {viewMode === "ano" && (
+        <div className="card-soft p-4 text-[13px] text-navy">
+          <p className="text-muted-foreground">Visualização anual simplificada: navegue pelo mês no modo <b>Mês</b>. (Protótipo)</p>
+        </div>
+      )}
+      {selectedDate && (
+        <div className="card-soft mt-5 p-4">
+          <h3 className="text-[16px] font-semibold text-navy">{editingId ? "Editar meditação" : "Adicionar meditação"} — {selectedDate}</h3>
+          <label className="mt-3 block text-[13px] text-navy">Título<input value={title} onChange={e=>setTitle(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+          <label className="mt-3 block text-[13px] text-navy">Versículo bíblico<input value={verse} onChange={e=>setVerse(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+          <label className="mt-3 block text-[13px] text-navy">Conteúdo<textarea value={content} onChange={e=>setContent(e.target.value)} rows={4} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button onClick={save} className="btn-gold rounded-lg px-4 py-2 text-[14px] font-semibold">{editingId ? "Salvar" : "Adicionar"}</button>
+            {editingId && <button onClick={del} className="rounded-lg border border-red-200 px-4 py-2 text-[14px] text-red-600">Excluir</button>}
+            <button onClick={()=>{reset(); setSelectedDate("");}} className="rounded-lg border border-border px-4 py-2 text-[14px] text-navy">Fechar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
