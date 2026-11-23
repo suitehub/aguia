@@ -311,7 +311,7 @@ function RelatoriosPage() {
 }
 
 function RankingPage() {
-  const [rankPeriod, setRankPeriod] = useState<"Semanal"|"Mensal"|"Semestral">("Semanal");
+  const [rankPeriod, setRankPeriod] = useState<"Diário"|"Semanal"|"Mensal">("Semanal");
   const [rankMod, setRankMod] = useState<"Casa em Casa"|"Indicação">("Casa em Casa");
   const rankingData = useMemo(() => {
     const dias = PERIODOS[rankPeriod];
@@ -330,7 +330,7 @@ function RankingPage() {
       <Title t="Ranking" s="Horas trabalhadas por modalidade e período." />
       <div className="mb-4 flex flex-wrap items-center gap-4">
         <div className="inline-flex rounded-xl bg-secondary p-1">
-          {(["Semanal","Mensal","Semestral"] as const).map(p => (
+          {(["Diário","Semanal","Mensal"] as const).map(p => (
             <button key={p} onClick={()=>setRankPeriod(p)} className={`rounded-lg px-4 py-1.5 text-[14px] font-medium transition ${rankPeriod===p?"btn-gold":"text-navy/70"}`}>{p}</button>
           ))}
         </div>

@@ -33,7 +33,7 @@ export function ColportorApp() {
   const [trainingPdfs] = useState(() => loadTrainingPdfs());
   const [bookOffers] = useState(() => loadBookOffers());
   const [openOfferSection, setOpenOfferSection] = useState<"pdfs" | "livros" | "outros">("pdfs");
-  const [rankPeriod, setRankPeriod] = useState<"Semanal"|"Mensal"|"Semestral">("Semanal");
+  const [rankPeriod, setRankPeriod] = useState<"Diário"|"Semanal"|"Mensal">("Semanal");
   const [rankMod, setRankMod] = useState<Seguimento>("Casa em Casa");
   const vendas = Object.values(livros).reduce((a, b) => a + b, 0);
 
@@ -252,7 +252,7 @@ export function ColportorApp() {
 
               {/* Period filter */}
               <div className="mt-4 flex rounded-xl bg-secondary p-1">
-                {(["Semanal","Mensal","Semestral"] as const).map(p => (
+                {(["Diário","Semanal","Mensal"] as const).map(p => (
                   <button key={p} onClick={()=>setRankPeriod(p)} className={`flex-1 rounded-lg py-2 text-[13px] font-medium transition ${rankPeriod===p?"bg-gold text-navy":"text-navy/70"}`}>{p}</button>
                 ))}
               </div>
