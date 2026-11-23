@@ -441,15 +441,15 @@ function TreinamentosPage() {
   const [bName, setBName] = useState(""); const [bDesc, setBDesc] = useState(""); const [bArgs, setBArgs] = useState(""); const [bApp, setBApp] = useState(""); const [bOffer, setBOffer] = useState("");
   useEffect(() => { setPdfs(loadTrainingPdfs()); setBooks(loadBookOffers()); }, []);
   const addPdf = () => {
-    if (!pdfTitle) return alert("Informe o título.");
-    const item: TrainingPdf = { id: String(Date.now()), title: pdfTitle, description: pdfDesc, category: pdfCat || "Geral", url: pdfUrl, date: new Date().toLocaleDateString("pt-BR") };
+    if (!pdfTitle.trim()) return alert("Informe o título do PDF.");
+    const item: TrainingPdf = { id: String(Date.now()), title: pdfTitle.trim(), description: pdfDesc.trim(), category: pdfCat.trim() || "Geral", url: pdfUrl, date: new Date().toLocaleDateString("pt-BR") };
     const next = [item, ...pdfs]; setPdfs(next); saveTrainingPdfs(next);
     setPdfTitle(""); setPdfDesc(""); setPdfCat(""); setPdfUrl("");
   };
   const delPdf = (id: string) => { const next = pdfs.filter(p=>p.id!==id); setPdfs(next); saveTrainingPdfs(next); };
   const addBook = () => {
-    if (!bName) return alert("Informe o nome do livro.");
-    const item: BookOffer = { id: String(Date.now()), bookName: bName, description: bDesc, arguments: bArgs, approach: bApp, offer: bOffer };
+    if (!bName.trim()) return alert("Informe o nome do livro.");
+    const item: BookOffer = { id: String(Date.now()), bookName: bName.trim(), description: bDesc.trim(), arguments: bArgs.trim(), approach: bApp.trim(), offer: bOffer.trim() };
     const next = [item, ...books]; setBooks(next); saveBookOffers(next);
     setBName(""); setBDesc(""); setBArgs(""); setBApp(""); setBOffer("");
   };
@@ -464,39 +464,61 @@ function TreinamentosPage() {
   };
   return (
     <div>
-      <Title t="Ofertas" s="Gerencie ofertas em PDF e ofertas de livros específicos." />
-      <div className="grid grid-cols-2 gap-5">
-        <div className="card-soft p-4">
-          <h3 className="text-[17px] font-semibold text-navy">Ofertas (PDF)</h3>
-          <label className="mt-2 block text-[13px] text-navy">Título<input value={pdfTitle} onChange={e=>setPdfTitle(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
-          <label className="mt-2 block text-[13px] text-navy">Descrição<input value={pdfDesc} onChange={e=>setPdfDesc(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
-          <label className="mt-2 block text-[13px] text-navy">Categoria<input value={pdfCat} onChange={e=>setPdfCat(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
-          <label className="mt-2 block text-[13px] text-navy">Arquivo PDF<input type="file" accept="application/pdf" onChange={onFile} className="mt-1 w-full text-[13px]" /></label>
-          {pdfUrl && <div className="mt-1 text-[12px] text-leaf">Arquivo carregado (protótipo).</div>}
-          <button onClick={addPdf} className="btn-gold mt-3 rounded-lg px-4 py-2 text-[14px] font-semibold">Adicionar PDF</button>
-          <ul className="mt-4 space-y-2">{pdfs.map(p=>(
-            <li key={p.id} className="rounded-lg border border-border p-2 text-[13px]">
-              <div className="font-semibold text-navy">{p.title}</div>
-              <div className="text-muted-foreground">{p.category} • {p.date}</div>
-              <button onClick={()=>delPdf(p.id)} className="mt-1 text-red-600 underline">Excluir</button>
-            </li>
-          ))}</ul>
-        </div>
-        <div className="card-soft p-4">
-          <h3 className="text-[17px] font-semibold text-navy">Ofertas de livros específicos</h3>
-          <label className="mt-2 block text-[13px] text-navy">Nome do livro<input value={bName} onChange={e=>setBName(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
-          <label className="mt-2 block text-[13px] text-navy">Descrição<textarea value={bDesc} onChange={e=>setBDesc(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
-          <label className="mt-2 block text-[13px] text-navy">Argumentos<textarea value={bArgs} onChange={e=>setBArgs(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
-          <label className="mt-2 block text-[13px] text-navy">Sugestão de abordagem<textarea value={bApp} onChange={e=>setBApp(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
-          <label className="mt-2 block text-[13px] text-navy">Oferta/proposta<input value={bOffer} onChange={e=>setBOffer(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
-          <button onClick={addBook} className="btn-gold mt-3 rounded-lg px-4 py-2 text-[14px] font-semibold">Adicionar livro</button>
-          <ul className="mt-4 space-y-2">{books.map(b=>(
-            <li key={b.id} className="rounded-lg border border-border p-2 text-[13px]">
-              <div className="font-semibold text-navy">{b.bookName}</div>
-              <button onClick={()=>delBook(b.id)} className="mt-1 text-red-600 underline">Excluir</button>
-            </li>
-          ))}</ul>
-        </div>
+      <Title t="Ofertas" s="Gerencie materiais em PDF e ofertas de livros para os colportores." />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="card-soft p-5">
+          <div className="mb-4 border-b border-border pb-3">
+            <h3 className="text-[18px] font-semibold text-navy">Ofertas em PDF</h3>
+            <p className="text-[13px] text-muted-foreground">Cadastre materiais de apoio com título, categoria e arquivo.</p>
+          </div>
+          <div className="space-y-3">
+            <label className="block text-[13px] font-medium text-navy">Título<input value={pdfTitle} onChange={e=>setPdfTitle(e.target.value)} placeholder="Ex.: Como apresentar uma oferta" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-gold/40" /></label>
+            <label className="block text-[13px] font-medium text-navy">Descrição<input value={pdfDesc} onChange={e=>setPdfDesc(e.target.value)} placeholder="Resumo curto do material" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-gold/40" /></label>
+            <label className="block text-[13px] font-medium text-navy">Categoria<input value={pdfCat} onChange={e=>setPdfCat(e.target.value)} placeholder="Ex.: Abordagem" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-gold/40" /></label>
+            <label className="block text-[13px] font-medium text-navy">Arquivo PDF<input type="file" accept="application/pdf" onChange={onFile} className="mt-1 w-full text-[13px]" /></label>
+            {pdfUrl && <div className="rounded-lg bg-leaf-soft px-3 py-2 text-[12px] text-navy">Arquivo carregado (protótipo). Será exibido ao colportor quando salvo.</div>}
+            <button onClick={addPdf} className="btn-gold w-full rounded-lg px-4 py-2.5 text-[14px] font-semibold">Adicionar oferta em PDF</button>
+          </div>
+          <div className="mt-5">
+            <h4 className="text-[13px] font-semibold uppercase tracking-wide text-navy/70">Itens cadastrados ({pdfs.length})</h4>
+            {pdfs.length === 0 ? <p className="mt-2 text-[13px] text-muted-foreground">Nenhum PDF cadastrado.</p> : (
+              <ul className="mt-2 space-y-2">{pdfs.map(p=>(
+                <li key={p.id} className="flex items-start justify-between gap-2 rounded-lg border border-border bg-background p-3">
+                  <div className="min-w-0">
+                    <div className="font-semibold text-navy">{p.title}</div>
+                    <div className="text-[12px] text-muted-foreground">{p.category} • {p.date}{p.url ? " • com arquivo" : " • sem arquivo"}</div>
+                  </div>
+                  <button onClick={()=>delPdf(p.id)} className="shrink-0 text-[13px] text-red-600 underline">Excluir</button>
+                </li>
+              ))}</ul>
+            )}
+          </div>
+        </section>
+        <section className="card-soft p-5">
+          <div className="mb-4 border-b border-border pb-3">
+            <h3 className="text-[18px] font-semibold text-navy">Ofertas de livros</h3>
+            <p className="text-[13px] text-muted-foreground">Cadastre argumentos, abordagem e proposta por livro.</p>
+          </div>
+          <div className="space-y-3">
+            <label className="block text-[13px] font-medium text-navy">Nome do livro<input value={bName} onChange={e=>setBName(e.target.value)} placeholder="Ex.: O Grande Conflito" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-gold/40" /></label>
+            <label className="block text-[13px] font-medium text-navy">Descrição<textarea value={bDesc} onChange={e=>setBDesc(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-gold/40" /></label>
+            <label className="block text-[13px] font-medium text-navy">Argumentos de venda<textarea value={bArgs} onChange={e=>setBArgs(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-gold/40" /></label>
+            <label className="block text-[13px] font-medium text-navy">Sugestão de abordagem<textarea value={bApp} onChange={e=>setBApp(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-gold/40" /></label>
+            <label className="block text-[13px] font-medium text-navy">Oferta/proposta<input value={bOffer} onChange={e=>setBOffer(e.target.value)} placeholder="Ex.: condição especial nesta visita" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-gold/40" /></label>
+            <button onClick={addBook} className="btn-gold w-full rounded-lg px-4 py-2.5 text-[14px] font-semibold">Adicionar oferta de livro</button>
+          </div>
+          <div className="mt-5">
+            <h4 className="text-[13px] font-semibold uppercase tracking-wide text-navy/70">Itens cadastrados ({books.length})</h4>
+            {books.length === 0 ? <p className="mt-2 text-[13px] text-muted-foreground">Nenhum livro cadastrado.</p> : (
+              <ul className="mt-2 space-y-2">{books.map(b=>(
+                <li key={b.id} className="flex items-start justify-between gap-2 rounded-lg border border-border bg-background p-3">
+                  <div className="min-w-0 font-semibold text-navy">{b.bookName}</div>
+                  <button onClick={()=>delBook(b.id)} className="shrink-0 text-[13px] text-red-600 underline">Excluir</button>
+                </li>
+              ))}</ul>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );
