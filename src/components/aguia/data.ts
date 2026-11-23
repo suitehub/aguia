@@ -59,6 +59,55 @@ export function diaLabel(d: number) {
   const dt = new Date(2026, 10, 10 - d); return dt.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 }
 
+export type Meditation = { id: string; date: string; title: string; verse: string; content: string };
+export type TrainingPdf = { id: string; title: string; description: string; category: string; url: string; date: string };
+export type BookOffer = { id: string; bookName: string; description: string; arguments: string; approach: string; offer: string };
+
+export function getTodaySaoPaulo(): string {
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+    const y = parts.find(p => p.type === "year")?.value;
+    const m = parts.find(p => p.type === "month")?.value;
+    const d = parts.find(p => p.type === "day")?.value;
+    return `${y}-${m}-${d}`;
+  } catch {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+}
+
+const LS_MEDITATIONS = "aguia_meditations";
+const LS_TRAINING_PDFS = "aguia_training_pdfs";
+const LS_BOOK_OFFERS = "aguia_book_offers";
+
+export function loadMeditations(): Meditation[] {
+  try {
+    const raw = localStorage.getItem(LS_MEDITATIONS);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+export function saveMeditations(items: Meditation[]) {
+  try { localStorage.setItem(LS_MEDITATIONS, JSON.stringify(items)); } catch {}
+}
+export function loadTrainingPdfs(): TrainingPdf[] {
+  try {
+    const raw = localStorage.getItem(LS_TRAINING_PDFS);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+export function saveTrainingPdfs(items: TrainingPdf[]) {
+  try { localStorage.setItem(LS_TRAINING_PDFS, JSON.stringify(items)); } catch {}
+}
+export function loadBookOffers(): BookOffer[] {
+  try {
+    const raw = localStorage.getItem(LS_BOOK_OFFERS);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+export function saveBookOffers(items: BookOffer[]) {
+  try { localStorage.setItem(LS_BOOK_OFFERS, JSON.stringify(items)); } catch {}
+}
+
 export const semana = [
   { dia: "Seg", ofertas: 42, vendas: 8 }, { dia: "Ter", ofertas: 38, vendas: 18 }, { dia: "Qua", ofertas: 62, vendas: 27 },
   { dia: "Qui", ofertas: 47, vendas: 18 }, { dia: "Sex", ofertas: 63, vendas: 27 }, { dia: "Sáb", ofertas: 78, vendas: 34 }, { dia: "Dom", ofertas: 63, vendas: 27 },

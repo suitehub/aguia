@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
-import { LayoutGrid, Users, CalendarPlus, BarChart3, Target, Settings, CalendarDays, ChevronDown, Bell, BookOpen, ShoppingCart, ChevronRight, ArrowRight, ArrowLeft, Search, Clock } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { LayoutGrid, Users, CalendarPlus, BarChart3, Target, Settings, CalendarDays, ChevronDown, Bell, BookOpen, ShoppingCart, ChevronRight, ArrowRight, ArrowLeft, Search, Clock, BookMarked, GraduationCap } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Bar, BarChart, Legend } from "recharts";
 import eagle from "@/assets/logo.png";
 import mountain from "@/assets/mountain.jpg";
 import hero from "@/assets/hero.jpg";
 import { Avatar } from "./Avatar";
-import { colportores, lancamentos, getColportor, semana, totais, brl, diaLabel, PERIODOS, type Periodo, type Seguimento } from "./data";
+import { colportores, lancamentos, getColportor, semana, totais, brl, diaLabel, PERIODOS, type Periodo, type Seguimento, loadMeditations, saveMeditations, loadTrainingPdfs, saveTrainingPdfs, loadBookOffers, saveBookOffers, type Meditation, type TrainingPdf, type BookOffer } from "./data";
 
 const Pray = (p: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}>
@@ -13,12 +13,14 @@ const Pray = (p: { className?: string }) => (
   </svg>
 );
 
-type Page = "geral" | "colportores" | "lancamentos" | "relatorios" | "metas";
+type Page = "geral" | "colportores" | "lancamentos" | "relatorios" | "metas" | "meditacoes" | "treinamentos";
 const nav: { id: Page; label: string; icon: typeof Users }[] = [
   { id: "geral", label: "Visão Geral", icon: LayoutGrid },
   { id: "colportores", label: "Colportores", icon: Users },
   { id: "lancamentos", label: "Lançamentos", icon: CalendarPlus },
   { id: "relatorios", label: "Relatórios", icon: BarChart3 },
+  { id: "meditacoes", label: "Meditações", icon: BookMarked },
+  { id: "treinamentos", label: "Treinamentos", icon: GraduationCap },
   { id: "metas", label: "Metas", icon: Target },
 ];
 
@@ -59,6 +61,8 @@ export function Leader() {
           {page === "colportores" && <ColportoresPage sel={sel} setSel={setSel} />}
           {page === "lancamentos" && <LancamentosPage />}
           {page === "relatorios" && <RelatoriosPage />}
+          {page === "meditacoes" && <MeditacoesPage />}
+          {page === "treinamentos" && <TreinamentosPage />}
           {page === "metas" && <MetasPage />}
         </main>
       </div>
@@ -315,6 +319,134 @@ function MetasPage() {
             <div className="text-navy"><b>{g.v}</b> de {g.m}</div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function MeditacoesPage() {
+  const [items, setItems] = useState<Meditation[]>([]);
+  const [date, setDate] = useState("");
+  const [title, setTitle] = useState("");
+  const [verse, setVerse] = useState("");
+  const [content, setContent] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  useEffect(() => { setItems(loadMeditations()); }, []);
+  const reset = () => { setDate(""); setTitle(""); setVerse(""); setContent(""); setEditingId(null); };
+  const save = () => {
+    if (!date || !title) return alert("Preencha data e título.");
+    const exists = items.find(m => m.date === date && m.id !== editingId);
+    if (exists) return alert("Já existe uma meditação para essa data. Edite ou exclua a existente.");
+    let next: Meditation[];
+    if (editingId) {
+      next = items.map(m => m.id === editingId ? { ...m, date, title, verse, content } : m);
+    } else {
+      next = [...items, { id: String(Date.now()), date, title, verse, content }];
+    }
+    next.sort((a,b) => a.date.localeCompare(b.date));
+    setItems(next); saveMeditations(next); reset();
+  };
+  const edit = (m: Meditation) => { setEditingId(m.id); setDate(m.date); setTitle(m.title); setVerse(m.verse); setContent(m.content); };
+  const del = (id: string) => { const next = items.filter(m => m.id !== id); setItems(next); saveMeditations(next); if (editingId === id) reset(); };
+  return (
+    <div>
+      <Title t="Meditações Diárias" s="Gerencie as meditações exibidas aos colportores (aparecem no dia programado)." />
+      <div className="card-soft mb-5 p-4">
+        <div className="grid grid-cols-2 gap-3">
+          <label className="text-[13px] text-navy">Data<input type="date" value={date} onChange={e=>setDate(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+          <label className="text-[13px] text-navy">Título<input value={title} onChange={e=>setTitle(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+        </div>
+        <label className="mt-3 block text-[13px] text-navy">Versículo bíblico<input value={verse} onChange={e=>setVerse(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+        <label className="mt-3 block text-[13px] text-navy">Conteúdo<textarea value={content} onChange={e=>setContent(e.target.value)} rows={4} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+        <div className="mt-3 flex gap-2">
+          <button onClick={save} className="btn-gold rounded-lg px-4 py-2 text-[14px] font-semibold">{editingId ? "Salvar alterações" : "Cadastrar meditação"}</button>
+          {editingId && <button onClick={reset} className="rounded-lg border border-border px-4 py-2 text-[14px] text-navy">Cancelar</button>}
+        </div>
+      </div>
+      <div className="card-soft overflow-hidden">
+        <table className="w-full text-[14px]">
+          <thead className="bg-secondary text-left text-navy"><tr>
+            <th className="px-4 py-3 font-semibold">Data</th><th className="px-4 py-3 font-semibold">Título</th><th className="px-4 py-3 font-semibold">Ações</th>
+          </tr></thead>
+          <tbody className="divide-y divide-border">
+            {items.length === 0 && <tr><td colSpan={3} className="px-4 py-4 text-muted-foreground">Nenhuma meditação cadastrada.</td></tr>}
+            {items.map(m => (
+              <tr key={m.id} className="text-navy">
+                <td className="px-4 py-2.5">{m.date}</td>
+                <td className="px-4 py-2.5">{m.title}</td>
+                <td className="px-4 py-2.5"><button onClick={()=>edit(m)} className="mr-2 text-sky underline">Editar</button><button onClick={()=>del(m.id)} className="text-red-600 underline">Excluir</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function TreinamentosPage() {
+  const [pdfs, setPdfs] = useState<TrainingPdf[]>([]);
+  const [books, setBooks] = useState<BookOffer[]>([]);
+  const [pdfTitle, setPdfTitle] = useState(""); const [pdfDesc, setPdfDesc] = useState(""); const [pdfCat, setPdfCat] = useState(""); const [pdfUrl, setPdfUrl] = useState("");
+  const [bName, setBName] = useState(""); const [bDesc, setBDesc] = useState(""); const [bArgs, setBArgs] = useState(""); const [bApp, setBApp] = useState(""); const [bOffer, setBOffer] = useState("");
+  useEffect(() => { setPdfs(loadTrainingPdfs()); setBooks(loadBookOffers()); }, []);
+  const addPdf = () => {
+    if (!pdfTitle) return alert("Informe o título.");
+    const item: TrainingPdf = { id: String(Date.now()), title: pdfTitle, description: pdfDesc, category: pdfCat || "Geral", url: pdfUrl, date: new Date().toLocaleDateString("pt-BR") };
+    const next = [item, ...pdfs]; setPdfs(next); saveTrainingPdfs(next);
+    setPdfTitle(""); setPdfDesc(""); setPdfCat(""); setPdfUrl("");
+  };
+  const delPdf = (id: string) => { const next = pdfs.filter(p=>p.id!==id); setPdfs(next); saveTrainingPdfs(next); };
+  const addBook = () => {
+    if (!bName) return alert("Informe o nome do livro.");
+    const item: BookOffer = { id: String(Date.now()), bookName: bName, description: bDesc, arguments: bArgs, approach: bApp, offer: bOffer };
+    const next = [item, ...books]; setBooks(next); saveBookOffers(next);
+    setBName(""); setBDesc(""); setBArgs(""); setBApp(""); setBOffer("");
+  };
+  const delBook = (id: string) => { const next = books.filter(b=>b.id!==id); setBooks(next); saveBookOffers(next); };
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    if (f.type !== "application/pdf") return alert("Envie um arquivo PDF.");
+    if (f.size > 5 * 1024 * 1024) return alert("Arquivo muito grande (máx 5MB neste protótipo).");
+    const reader = new FileReader();
+    reader.onload = () => setPdfUrl(String(reader.result || ""));
+    reader.readAsDataURL(f);
+  };
+  return (
+    <div>
+      <Title t="Treinamentos" s="Gerencie ofertas em PDF e ofertas de livros específicos." />
+      <div className="grid grid-cols-2 gap-5">
+        <div className="card-soft p-4">
+          <h3 className="text-[17px] font-semibold text-navy">Ofertas (PDF)</h3>
+          <label className="mt-2 block text-[13px] text-navy">Título<input value={pdfTitle} onChange={e=>setPdfTitle(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+          <label className="mt-2 block text-[13px] text-navy">Descrição<input value={pdfDesc} onChange={e=>setPdfDesc(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+          <label className="mt-2 block text-[13px] text-navy">Categoria<input value={pdfCat} onChange={e=>setPdfCat(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+          <label className="mt-2 block text-[13px] text-navy">Arquivo PDF<input type="file" accept="application/pdf" onChange={onFile} className="mt-1 w-full text-[13px]" /></label>
+          {pdfUrl && <div className="mt-1 text-[12px] text-leaf">Arquivo carregado (protótipo).</div>}
+          <button onClick={addPdf} className="btn-gold mt-3 rounded-lg px-4 py-2 text-[14px] font-semibold">Adicionar PDF</button>
+          <ul className="mt-4 space-y-2">{pdfs.map(p=>(
+            <li key={p.id} className="rounded-lg border border-border p-2 text-[13px]">
+              <div className="font-semibold text-navy">{p.title}</div>
+              <div className="text-muted-foreground">{p.category} • {p.date}</div>
+              <button onClick={()=>delPdf(p.id)} className="mt-1 text-red-600 underline">Excluir</button>
+            </li>
+          ))}</ul>
+        </div>
+        <div className="card-soft p-4">
+          <h3 className="text-[17px] font-semibold text-navy">Ofertas de livros específicos</h3>
+          <label className="mt-2 block text-[13px] text-navy">Nome do livro<input value={bName} onChange={e=>setBName(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+          <label className="mt-2 block text-[13px] text-navy">Descrição<textarea value={bDesc} onChange={e=>setBDesc(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+          <label className="mt-2 block text-[13px] text-navy">Argumentos<textarea value={bArgs} onChange={e=>setBArgs(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+          <label className="mt-2 block text-[13px] text-navy">Sugestão de abordagem<textarea value={bApp} onChange={e=>setBApp(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+          <label className="mt-2 block text-[13px] text-navy">Oferta/proposta<input value={bOffer} onChange={e=>setBOffer(e.target.value)} className="mt-1 w-full rounded-lg border border-border px-2 py-1.5 text-[14px]" /></label>
+          <button onClick={addBook} className="btn-gold mt-3 rounded-lg px-4 py-2 text-[14px] font-semibold">Adicionar livro</button>
+          <ul className="mt-4 space-y-2">{books.map(b=>(
+            <li key={b.id} className="rounded-lg border border-border p-2 text-[13px]">
+              <div className="font-semibold text-navy">{b.bookName}</div>
+              <button onClick={()=>delBook(b.id)} className="mt-1 text-red-600 underline">Excluir</button>
+            </li>
+          ))}</ul>
+        </div>
       </div>
     </div>
   );
