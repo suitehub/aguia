@@ -20,7 +20,7 @@ const nav: { id: Page; label: string; icon: typeof Users }[] = [
   { id: "lancamentos", label: "Lançamentos", icon: CalendarPlus },
   { id: "relatorios", label: "Relatórios", icon: BarChart3 },
   { id: "meditacoes", label: "Meditações", icon: BookMarked },
-  { id: "treinamentos", label: "Treinamentos", icon: GraduationCap },
+  { id: "treinamentos", label: "Ofertas", icon: GraduationCap },
   { id: "metas", label: "Metas", icon: Target },
 ];
 
@@ -414,7 +414,7 @@ function TreinamentosPage() {
   };
   return (
     <div>
-      <Title t="Treinamentos" s="Gerencie ofertas em PDF e ofertas de livros específicos." />
+      <Title t="Ofertas" s="Gerencie ofertas em PDF e ofertas de livros específicos." />
       <div className="grid grid-cols-2 gap-5">
         <div className="card-soft p-4">
           <h3 className="text-[17px] font-semibold text-navy">Ofertas (PDF)</h3>

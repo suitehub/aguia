@@ -83,7 +83,21 @@ const LS_BOOK_OFFERS = "aguia_book_offers";
 export function loadMeditations(): Meditation[] {
   try {
     const raw = localStorage.getItem(LS_MEDITATIONS);
-    return raw ? JSON.parse(raw) : [];
+    const arr: Meditation[] = raw ? JSON.parse(raw) : [];
+    // seed demo for today if none exists for today
+    const today = getTodaySaoPaulo();
+    const hasToday = arr.some(m => m.date === today);
+    if (!hasToday) {
+      arr.push({
+        id: "demo-today",
+        date: today,
+        title: "Antes de começar, coloque Deus em primeiro lugar. (exemplo demonstrativo)",
+        verse: "Mateus 6:33 — \"Busquem, pois, em primeiro lugar o Reino de Deus e a sua justiça, e todas essas coisas lhes serão acrescentadas.\"",
+        content: "Todos os dias começamos uma nova jornada. Para quem trabalha com a colportagem, cada manhã traz oportunidades, desafios, pessoas diferentes e situações que nem sempre podemos prever.\n\nÀs vezes, ficamos tão preocupados com os resultados, com as vendas e com aquilo que precisamos alcançar, que acabamos deixando de lado aquilo que deveria estar em primeiro lugar: nossa comunhão com Deus.\n\nJesus nos ensina que devemos buscar primeiro o Reino de Deus. Isso significa que nossa prioridade não deve ser apenas aquilo que queremos conquistar, mas quem estamos nos tornando durante o caminho.\n\nAntes de sair para apresentar um livro, antes de conversar com alguém ou estabelecer suas metas, reserve um momento para entregar seu dia a Deus.\n\nLembre-se: você não está apenas oferecendo livros. Está levando mensagens que podem transformar vidas.\n\nAplicação para hoje:\nAntes de iniciar suas atividades, separe alguns minutos para orar e peça a Deus que prepare as pessoas que você encontrará hoje.\n\nDesafio do dia:\nCompartilhe uma mensagem de esperança com pelo menos uma pessoa durante sua jornada."
+      });
+      try { localStorage.setItem(LS_MEDITATIONS, JSON.stringify(arr)); } catch {}
+    }
+    return arr;
   } catch { return []; }
 }
 export function saveMeditations(items: Meditation[]) {
@@ -92,7 +106,16 @@ export function saveMeditations(items: Meditation[]) {
 export function loadTrainingPdfs(): TrainingPdf[] {
   try {
     const raw = localStorage.getItem(LS_TRAINING_PDFS);
-    return raw ? JSON.parse(raw) : [];
+    const arr: TrainingPdf[] = raw ? JSON.parse(raw) : [];
+    if (arr.length === 0) {
+      arr.push(
+        { id: "demo-pdf-1", title: "Como apresentar uma oferta (exemplo)", description: "Guia demonstrativo sobre estrutura de apresentação.", category: "Abordagem", url: "", date: "Demo" },
+        { id: "demo-pdf-2", title: "Técnicas para despertar interesse (exemplo)", description: "Exemplo de material de apoio ao colportor.", category: "Interesse", url: "", date: "Demo" },
+        { id: "demo-pdf-3", title: "Como contornar objeções (exemplo)", description: "Material demonstrativo — sem PDF real anexado.", category: "Objeções", url: "", date: "Demo" }
+      );
+      try { localStorage.setItem(LS_TRAINING_PDFS, JSON.stringify(arr)); } catch {}
+    }
+    return arr;
   } catch { return []; }
 }
 export function saveTrainingPdfs(items: TrainingPdf[]) {
@@ -101,7 +124,19 @@ export function saveTrainingPdfs(items: TrainingPdf[]) {
 export function loadBookOffers(): BookOffer[] {
   try {
     const raw = localStorage.getItem(LS_BOOK_OFFERS);
-    return raw ? JSON.parse(raw) : [];
+    const arr: BookOffer[] = raw ? JSON.parse(raw) : [];
+    if (arr.length === 0) {
+      arr.push({
+        id: "demo-book-1",
+        bookName: "O Grande Conflito (exemplo)",
+        description: "Exemplo demonstrativo de oferta de livro para visualizar o layout.",
+        arguments: "Aborda a grande controvérsia entre o bem e o mal de forma clara e envolvente.",
+        approach: "Comece perguntando sobre esperança e o futuro; conecte com temas atuais.",
+        offer: "Proposta exemplo: condição especial nesta visita."
+      });
+      try { localStorage.setItem(LS_BOOK_OFFERS, JSON.stringify(arr)); } catch {}
+    }
+    return arr;
   } catch { return []; }
 }
 export function saveBookOffers(items: BookOffer[]) {

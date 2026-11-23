@@ -126,13 +126,22 @@ export function ColportorApp() {
 
           {tab === "meditacao" && (
             <div className="mt-2">
+              <p className="text-[12px] font-medium uppercase tracking-wide text-navy/60">Meditação do dia</p>
               <h2 className="text-[22px] font-semibold leading-tight text-navy">Meditação Diária</h2>
-              <p className="text-[13px] text-navy/80">{new Date(todaySP + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}</p>
+              <p className="mt-1 text-[14px] font-medium text-navy/80">{new Date(todaySP + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}</p>
               {todayMeditation ? (
-                <div className="card-soft mt-4 p-4">
-                  <h3 className="text-[18px] font-semibold text-navy">{todayMeditation.title}</h3>
-                  <p className="mt-2 text-[14px] italic text-navy/80">{todayMeditation.verse}</p>
-                  <div className="mt-3 whitespace-pre-wrap text-[14px] leading-relaxed text-navy/90">{todayMeditation.content}</div>
+                <div className="mt-4 space-y-4">
+                  <div className="card-soft p-4">
+                    <h3 className="text-[18px] font-semibold leading-snug text-navy">{todayMeditation.title.replace(" (exemplo demonstrativo)", "")}</h3>
+                    {todayMeditation.title.includes("exemplo demonstrativo") && <span className="mt-2 inline-block rounded-full bg-gold-soft px-2 py-0.5 text-[11px] font-medium text-navy">Conteúdo demonstrativo</span>}
+                  </div>
+                  <div className="rounded-xl border-l-4 border-gold bg-gold-soft/40 p-4">
+                    <p className="text-[13px] font-semibold uppercase tracking-wide text-navy/70">Texto bíblico</p>
+                    <p className="mt-1 text-[14px] italic leading-relaxed text-navy">{todayMeditation.verse}</p>
+                  </div>
+                  <div className="card-soft p-4">
+                    <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-navy/90">{todayMeditation.content}</p>
+                  </div>
                 </div>
               ) : (
                 <div className="card-soft mt-4 p-6 text-center">
@@ -143,36 +152,52 @@ export function ColportorApp() {
           )}
 
           {tab === "treinamento" && (
-            <div className="mt-2">
-              <h2 className="text-[22px] font-semibold leading-tight text-navy">Treinamento</h2>
-              <p className="text-[13px] text-navy/80">Materiais e orientações para a sua colportagem.</p>
-              <div className="mt-4">
-                <h3 className="text-[16px] font-semibold text-navy">Ofertas (PDF)</h3>
+            <div className="mt-2 space-y-5">
+              <div>
+                <h2 className="text-[22px] font-semibold leading-tight text-navy">Ofertas</h2>
+                <p className="text-[13px] text-navy/80">Materiais e estratégias para fortalecer sua apresentação e suas vendas.</p>
+              </div>
+              <section>
+                <h3 className="text-[15px] font-semibold text-navy">Ofertas disponíveis (PDF)</h3>
                 {trainingPdfs.length === 0 ? <p className="mt-2 text-[13px] text-muted-foreground">Nenhuma oferta disponível.</p> : (
-                  <ul className="mt-2 space-y-2">{trainingPdfs.map(p => (
-                    <li key={p.id} className="card-soft p-3">
-                      <div className="font-semibold text-navy">{p.title}</div>
-                      <div className="text-[12px] text-muted-foreground">{p.category} • {p.date}</div>
-                      <div className="mt-1 text-[13px] text-navy/80">{p.description}</div>
-                      {p.url && <a href={p.url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[13px] font-medium text-sky underline">Abrir PDF</a>}
+                  <ul className="mt-3 space-y-3">{trainingPdfs.map(p => (
+                    <li key={p.id} className="card-soft p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-sky-soft text-sky"><BookOpen className="h-5 w-5" /></div>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-navy">{p.title}</div>
+                          <div className="mt-0.5 text-[11px] text-muted-foreground">{p.category} • {p.date} • PDF</div>
+                          <div className="mt-2 text-[13px] leading-relaxed text-navy/80">{p.description}</div>
+                          {p.url ? <a href={p.url} target="_blank" rel="noreferrer" className="btn-gold mt-3 inline-flex rounded-lg px-3 py-1.5 text-[12px] font-semibold">Abrir material</a> : <span className="mt-3 inline-block text-[12px] text-muted-foreground">Material demonstrativo (sem arquivo anexado).</span>}
+                        </div>
+                      </div>
                     </li>
                   ))}</ul>
                 )}
-              </div>
-              <div className="mt-5">
-                <h3 className="text-[16px] font-semibold text-navy">Ofertas de livros específicos</h3>
+              </section>
+              <section>
+                <h3 className="text-[15px] font-semibold text-navy">Ofertas de livros</h3>
                 {bookOffers.length === 0 ? <p className="mt-2 text-[13px] text-muted-foreground">Nenhum material disponível.</p> : (
-                  <ul className="mt-2 space-y-2">{bookOffers.map(b => (
-                    <li key={b.id} className="card-soft p-3">
-                      <div className="font-semibold text-navy">{b.bookName}</div>
-                      <div className="mt-1 text-[13px] text-navy/80">{b.description}</div>
-                      {b.arguments && <div className="mt-2 text-[12px]"><span className="font-medium">Argumentos:</span> {b.arguments}</div>}
-                      {b.approach && <div className="mt-1 text-[12px]"><span className="font-medium">Abordagem:</span> {b.approach}</div>}
-                      {b.offer && <div className="mt-1 text-[12px]"><span className="font-medium">Oferta:</span> {b.offer}</div>}
+                  <ul className="mt-3 space-y-3">{bookOffers.map(b => (
+                    <li key={b.id} className="card-soft overflow-hidden">
+                      <div className="bg-navy px-4 py-3 text-primary-foreground">
+                        <div className="text-[16px] font-semibold">{b.bookName}</div>
+                        {b.bookName.includes("(exemplo)") && <span className="mt-1 inline-block rounded-full bg-gold px-2 py-0.5 text-[10px] font-medium text-navy">Exemplo</span>}
+                      </div>
+                      <div className="p-4 text-[13px] text-navy/90">
+                        <p className="leading-relaxed">{b.description}</p>
+                        {b.arguments && <div className="mt-3"><div className="text-[11px] font-semibold uppercase tracking-wide text-navy/60">Argumentos</div><p className="mt-1">{b.arguments}</p></div>}
+                        {b.approach && <div className="mt-3"><div className="text-[11px] font-semibold uppercase tracking-wide text-navy/60">Abordagem sugerida</div><p className="mt-1">{b.approach}</p></div>}
+                        {b.offer && <div className="mt-3 rounded-lg bg-gold-soft/50 p-3"><div className="text-[11px] font-semibold uppercase tracking-wide text-navy/70">Oferta</div><p className="mt-1 font-medium text-navy">{b.offer}</p></div>}
+                      </div>
                     </li>
                   ))}</ul>
                 )}
-              </div>
+              </section>
+              <section className="rounded-xl border border-dashed border-border p-4">
+                <h3 className="text-[14px] font-semibold text-navy">Outros materiais</h3>
+                <p className="mt-1 text-[12px] text-muted-foreground">Espaço reservado para técnicas de abordagem, objeções, fechamento e orientações. A liderança poderá adicionar conteúdos futuramente.</p>
+              </section>
             </div>
           )}
 
@@ -181,7 +206,7 @@ export function ColportorApp() {
         </div>
 
         <nav className="grid grid-cols-6 bg-navy px-1 pb-5 pt-2 text-[9px] text-primary-foreground">
-          {[{ id: "inicio", l: "Início", i: Home }, { id: "lancar", l: "Lançar", i: PlusCircle }, { id: "hist", l: "Histórico", i: BarChart3 }, { id: "meditacao", l: "Meditação", i: BookOpen }, { id: "treinamento", l: "Treino", i: GraduationCap }, { id: "perfil", l: "Perfil", i: User }].map((n) => (
+          {[{ id: "inicio", l: "Início", i: Home }, { id: "lancar", l: "Lançar", i: PlusCircle }, { id: "hist", l: "Histórico", i: BarChart3 }, { id: "meditacao", l: "Meditação", i: BookOpen }, { id: "treinamento", l: "Ofertas", i: GraduationCap }, { id: "perfil", l: "Perfil", i: User }].map((n) => (
             <button key={n.id} onClick={() => setTab(n.id)} className={`mx-0.5 flex flex-col items-center gap-0.5 rounded-xl py-2 ${tab === n.id ? "btn-gold font-semibold" : ""}`}><n.i className="h-4 w-4" />{n.l}</button>
           ))}
           <span className="col-span-6 mx-auto mt-2 h-1 w-28 rounded-full bg-primary-foreground" />
