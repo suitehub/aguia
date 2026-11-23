@@ -266,70 +266,48 @@ export function ColportorApp() {
                 ))}
               </div>
 
-              {/* Podium */}
+              {/* Podium - apenas top 3 */}
               {rankingData.length === 0 ? (
                 <div className="card-soft mt-5 p-6 text-center text-[14px] text-muted-foreground">Sem dados para este período/modalidade.</div>
               ) : (
-                <>
-                  <div className="mt-6 flex items-end justify-center gap-2">
-                    {/* 2nd */}
-                    {rankingData[1] && (
-                      <div className="flex w-[30%] flex-col items-center rounded-t-xl bg-card pt-3 pb-4 shadow ring-1 ring-border">
-                        <div className="text-[12px] font-semibold text-navy/60">2º</div>
-                        <div className="mt-1 grid h-12 w-12 place-items-center rounded-full bg-sky-soft text-[16px] font-bold text-sky">{rankingData[1].nome.charAt(0)}</div>
-                        <div className="mt-2 text-center text-[12px] font-semibold text-navy leading-tight">{rankingData[1].nome.split(" ")[0]}</div>
-                        <div className="text-[14px] font-bold text-navy">{rankingData[1].horas}h</div>
-                      </div>
-                    )}
-                    {/* 1st */}
-                    {rankingData[0] && (
-                      <div className="flex w-[36%] flex-col items-center rounded-t-xl bg-gold pt-4 pb-5 shadow-lg ring-1 ring-gold/50">
-                        <Crown className="h-5 w-5 text-navy" />
-                        <div className="text-[12px] font-semibold text-navy/80">1º</div>
-                        <div className="mt-1 grid h-14 w-14 place-items-center rounded-full bg-card text-[18px] font-bold text-navy">{rankingData[0].nome.charAt(0)}</div>
-                        <div className="mt-2 text-center text-[13px] font-bold text-navy leading-tight">{rankingData[0].nome.split(" ")[0]}</div>
-                        <div className="text-[16px] font-extrabold text-navy">{rankingData[0].horas}h</div>
-                      </div>
-                    )}
-                    {/* 3rd */}
-                    {rankingData[2] && (
-                      <div className="flex w-[30%] flex-col items-center rounded-t-xl bg-card pt-3 pb-4 shadow ring-1 ring-border">
-                        <div className="text-[12px] font-semibold text-navy/60">3º</div>
-                        <div className="mt-1 grid h-12 w-12 place-items-center rounded-full bg-grape-soft text-[16px] font-bold text-grape">{rankingData[2].nome.charAt(0)}</div>
-                        <div className="mt-2 text-center text-[12px] font-semibold text-navy leading-tight">{rankingData[2].nome.split(" ")[0]}</div>
-                        <div className="text-[14px] font-bold text-navy">{rankingData[2].horas}h</div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* List for others (4th+) */}
-                  {rankingData.length > 3 && (
-                    <div className="card-soft mt-4 overflow-hidden">
-                      <ul className="divide-y divide-border">
-                        {rankingData.slice(3).map((r, idx) => (
-                          <li key={r.id} className="flex items-center gap-3 px-4 py-3">
-                            <span className="w-6 text-[13px] font-semibold text-navy/60">{idx+4}º</span>
-                            <div className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-[13px] font-bold text-navy">{r.nome.charAt(0)}</div>
-                            <span className="flex-1 text-[14px] font-medium text-navy">{r.nome}</span>
-                            <span className="text-[14px] font-bold text-navy">{r.horas}h</span>
-                          </li>
-                        ))}
-                      </ul>
+                <div className="mt-6 flex items-end justify-center gap-2">
+                  {/* 2nd */}
+                  {rankingData[1] && (
+                    <div className="flex w-[30%] flex-col items-center rounded-t-xl bg-card pt-3 pb-4 shadow ring-1 ring-border">
+                      <div className="text-[12px] font-semibold text-navy/60">2º</div>
+                      <div className="mt-1 grid h-12 w-12 place-items-center rounded-full bg-sky-soft text-[16px] font-bold text-sky">{rankingData[1].nome.charAt(0)}</div>
+                      <div className="mt-2 text-center text-[12px] font-semibold text-navy leading-tight">{rankingData[1].nome.split(" ")[0]}</div>
                     </div>
                   )}
-                </>
+                  {/* 1st */}
+                  {rankingData[0] && (
+                    <div className="flex w-[36%] flex-col items-center rounded-t-xl bg-gold pt-4 pb-5 shadow-lg ring-1 ring-gold/50">
+                      <Crown className="h-5 w-5 text-navy" />
+                      <div className="text-[12px] font-semibold text-navy/80">1º</div>
+                      <div className="mt-1 grid h-14 w-14 place-items-center rounded-full bg-card text-[18px] font-bold text-navy">{rankingData[0].nome.charAt(0)}</div>
+                      <div className="mt-2 text-center text-[13px] font-bold text-navy leading-tight">{rankingData[0].nome.split(" ")[0]}</div>
+                    </div>
+                  )}
+                  {/* 3rd */}
+                  {rankingData[2] && (
+                    <div className="flex w-[30%] flex-col items-center rounded-t-xl bg-card pt-3 pb-4 shadow ring-1 ring-border">
+                      <div className="text-[12px] font-semibold text-navy/60">3º</div>
+                      <div className="mt-1 grid h-12 w-12 place-items-center rounded-full bg-grape-soft text-[16px] font-bold text-grape">{rankingData[2].nome.charAt(0)}</div>
+                      <div className="mt-2 text-center text-[12px] font-semibold text-navy leading-tight">{rankingData[2].nome.split(" ")[0]}</div>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Sua posição */}
-              <div className="mt-4 flex items-center gap-3 rounded-xl border-l-4 border-gold bg-gold-soft/60 p-4">
+              <div className="mt-5 flex items-center gap-3 rounded-xl border-l-4 border-gold bg-gold-soft/60 p-4">
                 <div className="grid h-10 w-10 place-items-center rounded-full bg-gold/30 text-navy"><User className="h-5 w-5" /></div>
                 <div className="flex-1">
                   <div className="text-[11px] font-semibold uppercase tracking-wide text-navy/60">Sua posição</div>
                   <div className="text-[15px] font-semibold text-navy">{getColportor(myId)?.nome || "Você"}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[13px] font-bold text-navy">{myRank ? `${myRank}º` : "—"}</div>
-                  <div className="text-[13px] text-navy/80">{myHoras}h</div>
+                  <div className="text-[18px] font-bold text-navy">{myRank ? `${myRank}º lugar` : "Sem classificação"}</div>
                 </div>
               </div>
             </div>
